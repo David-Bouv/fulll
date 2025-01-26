@@ -8,6 +8,7 @@ class User
 {
     private UserId $id;
     private string $name;
+    private array $fleets = [];
 
     public function __construct(UserId $id, string $name)
     {
@@ -28,5 +29,15 @@ class User
     public function setName(string $name)
     {
         $this->name = $name;
+    }
+
+    public function addFleet(Fleet $fleet)
+    {
+        $this->fleets[] = $fleet;
+    }
+
+    public function getFleets(): array
+    {
+        return $this->fleets;
     }
 }
