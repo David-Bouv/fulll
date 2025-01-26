@@ -1,0 +1,39 @@
+# Composer dependencies
+/vendor/
+
+# PHPUnit test results
+/phpunit-result/
+/phpunit-logs/
+
+# Composer lock file (if you choose not to track it)
+composer.lock
+
+# IDE / Editor files
+/.idea/
+/.vscode/
+/*.swp
+*.swo
+
+# Operating System specific files
+.DS_Store      # macOS
+Thumbs.db      # Windows
+
+# Logs
+*.log
+
+# Caches
+/cache/
+*.cache
+
+# Environment variables (don't commit sensitive keys)
+.env
+.env.local
+
+# PHPUnit or other tool related cache
+*.phar
+phpunit-result.xml
+phpunit-logs/
+
+# Build artifacts
+/build/
+dist/
