@@ -3,15 +3,18 @@
 namespace Tests\Features\bootstrap;
 
 use App\Command\CreateFleetCommand;
+use App\Command\LocalizeVehicleCommand;
 use Behat\Behat\Context\Context;
 use App\Command\RegisterVehicleCommand;
 use App\Handler\RegisterVehicleHandler;
 use App\Handler\CreateFleetHandler;
+use App\Handler\LocalizeVehicleHandler;
 use Domain\Entity\Vehicle;
 use Domain\ValueObject\VehicleId;
 use Domain\Repository\FleetRepositoryInterface;
 use Domain\Repository\UserRepositoryInterface;
 use Domain\Repository\VehicleRepositoryInterface;
+use Domain\ValueObject\Location;
 use Infra\Repository\InMemoryUserRepository;
 use Infra\Repository\InMemoryFleetRepository;
 use Infra\Repository\InMemoryVehicleRepository;
@@ -63,7 +66,7 @@ class FeatureContext implements Context
     {
         $command = new RegisterVehicleCommand($this->fleetId, $this->vehicle->getLicensePlate(), $this->vehicle->getType());
         $handler = new RegisterVehicleHandler($this->fleetRepository, $this->vehicleRepository);
-        $handler->handle($command);
+        $this->vehicleId = $handler->handle($command);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +102,7 @@ class FeatureContext implements Context
         try {
             $command = new RegisterVehicleCommand($this->fleetId, $this->vehicle->getLicensePlate(), $this->vehicle->getType());
             $handler = new RegisterVehicleHandler($this->fleetRepository, $this->vehicleRepository);
-            $handler->handle($command);
+            $this->vehicleId = $handler->handle($command);
         } catch (\Exception $e) {
             $this->registrationException = $e;
         }
@@ -137,6 +140,80 @@ class FeatureContext implements Context
     {
         $command = new RegisterVehicleCommand($this->otherFleetId, $this->vehicle->getLicensePlate(), $this->vehicle->getType());
         $handler = new RegisterVehicleHandler($this->fleetRepository, $this->vehicleRepository);
+        $this->vehicleId = $handler->handle($command);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Park Vehicle ////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private Location $location;
+    private $parkException;
+
+    /**
+     * @Given a location
+     */
+    public function aLocation()
+    {
+        $this->location = new Location(43.296482, 5.36978, 28);
+    }
+
+    /**
+     * @When I park my vehicle at this location
+     */
+    public function iParkMyVehicleAtThisLocation()
+    {
+        $command = new LocalizeVehicleCommand($this->fleetId, $this->vehicle->getLicensePlate(), $this->location->getLatitude(), $this->location->getLongitude(), $this->location->getAltitude());
+        $handler = new LocalizeVehicleHandler($this->fleetRepository, $this->vehicleRepository);
         $handler->handle($command);
+    }
+
+    /**
+     * @Then the known location of my vehicle should verify this location
+     */
+    public function theKnownLocationOfMyVehicleShouldVerifyThisLocation()
+    {
+        $vehicle = $this->vehicleRepository->findById($this->vehicleId);
+        if (!$vehicle->getLocation()->equals($this->location)) {
+            throw new \Exception('Location of the vehicle does not match.');
+        }
+    }
+
+    /**
+     * @Given my vehicle has been parked into this location
+     */
+    public function myVehicleHasBeenParkedIntoThisLocation()
+    {
+        $command = new LocalizeVehicleCommand($this->fleetId, $this->vehicle->getLicensePlate(), $this->location->getLatitude(), $this->location->getLongitude(), $this->location->getAltitude());
+        $handler = new LocalizeVehicleHandler($this->fleetRepository, $this->vehicleRepository);
+        $handler->handle($command);
+    }
+
+    /**
+     * @When I try to park my vehicle at this location
+     */
+    public function iTryToParkMyVehicleAtThisLocation()
+    {
+        try {
+            $command = new LocalizeVehicleCommand($this->fleetId, $this->vehicle->getLicensePlate(), $this->location->getLatitude(), $this->location->getLongitude(), $this->location->getAltitude());
+            $handler = new LocalizeVehicleHandler($this->fleetRepository, $this->vehicleRepository);
+            $handler->handle($command);
+        } catch (\Exception $e) {
+            $this->parkException = $e;
+        }
+    }
+
+    /**
+     * @Then I should be informed that my vehicle is already parked at this location
+     */
+    public function iShouldBeInformedThatMyVehicleIsAlreadyParkedAtThisLocation()
+    {
+        if (!$this->parkException instanceof \Exception) {
+            throw new \Exception('No exception was thrown for duplicate registration');
+        }
+        
+        // Check if the exception message is the expected one
+        if ($this->parkException->getMessage() !== 'Vehicle is already parked at this location.') {
+            throw new \Exception('Unexpected exception message: ' . $this->parkException->getMessage());
+        }
     }
 }
