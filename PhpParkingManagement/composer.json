@@ -11,7 +11,8 @@
         "psr-4": {
             "App\\": "src/App/",
             "Domain\\": "src/Domain/",
-            "Infra\\": "src/Infra/"
+            "Infra\\": "src/Infra/",
+            "Console\\": "src/Console/"
         }
     },
     "autoload-dev": {
@@ -25,7 +26,8 @@
         "test:all": "phpunit"
     },
     "require": {
-        "php": "^8.2"
+        "php": "^8.2",
+        "symfony/console": "^7.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
