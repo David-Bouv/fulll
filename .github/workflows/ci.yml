@@ -37,14 +37,17 @@ jobs:
 
       - name: Install dependencies
         run: |
+          cd PhpParkingManagement
           composer install --prefer-dist --no-interaction
 
       - name: Run unit tests
         run: |
+          cd PhpParkingManagement
           composer test:unit
         timeout-minutes: 5
 
       - name: Run E2E tests (in memory)
         run: |
+          cd PhpParkingManagement
           vendor/bin/behat --profile=in_memory
         timeout-minutes: 10

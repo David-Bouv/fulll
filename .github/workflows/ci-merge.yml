@@ -30,14 +30,17 @@ jobs:
 
       - name: Install dependencies
         run: |
+          cd PhpParkingManagement
           composer install --prefer-dist --no-interaction
 
       - name: Run integration tests
         run: |
+          cd PhpParkingManagement
           composer test:integration
         timeout-minutes: 10
 
       - name: Run E2E tests (with database)
         run: |
+          cd PhpParkingManagement
           vendor/bin/behat --profile=database
         timeout-minutes: 15
