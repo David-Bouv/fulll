@@ -1,0 +1,50 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - dev
+      - test
+      - staging
+      - master
+  pull_request:
+    branches:
+      - dev
+      - test
+      - staging
+      - master
+
+jobs:
+  tests:
+    runs-on: debian-12
+    
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: |
+          composer install --prefer-dist --no-interaction
+
+      - name: Run unit tests
+        run: |
+          composer test:unit
+        timeout-minutes: 5
+
+      - name: Run E2E tests (in memory)
+        run: |
+          vendor/bin/behat --profile=in_memory
+        timeout-minutes: 10

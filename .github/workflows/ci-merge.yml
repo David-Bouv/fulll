@@ -1,0 +1,43 @@
+name: Integration Tests on Merge
+
+on:
+  push:
+    branches:
+      - test
+      - staging
+      - master
+
+jobs:
+  tests:
+    runs-on: debian-12
+    
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: |
+          composer install --prefer-dist --no-interaction
+
+      - name: Run integration tests
+        run: |
+          composer test:integration
+        timeout-minutes: 10
+
+      - name: Run E2E tests (with database)
+        run: |
+          vendor/bin/behat --profile=database
+        timeout-minutes: 15
