@@ -1,10 +1,15 @@
 <?php
 require dirname(__DIR__).'/vendor/autoload.php';
 
+use Console\Command\CreateFleetCLI;
+use Console\Command\LocalizeVehicleCLI;
+use Console\Command\RegisterVehicleCLI;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
 
-// Register commands
+$application->add(new CreateFleetCLI());
+$application->add(new LocalizeVehicleCLI());
+$application->add(new RegisterVehicleCLI());
 
 $application->run();
