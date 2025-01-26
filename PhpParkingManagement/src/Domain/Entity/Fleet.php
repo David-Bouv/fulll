@@ -18,6 +18,29 @@ class Fleet
         $this->name = $name;
     }
 
+    public function addVehicle(Vehicle $vehicle): void
+    {
+        if (isset($this->vehicles[$vehicle->getId()->__toString()])) {
+            throw new \Exception("Vehicle already registered in this fleet.");
+        }
+
+        $this->vehicles[$vehicle->getId()->__toString()] = $vehicle;
+    }
+
+    public function getVehicle(string $vehicleId): Vehicle
+    {
+        if (!isset($this->vehicles[$vehicleId])) {
+            throw new \Exception("Vehicle not found in the fleet.");
+        }
+
+        return $this->vehicles[$vehicleId];
+    }
+
+    public function getVehicles(): array
+    {
+        return $this->vehicles;
+    }
+
     public function getId(): FleetId
     {
         return $this->id;
