@@ -41,6 +41,15 @@ class Fleet
         return $this->vehicles;
     }
 
+    public function hasVehicle(Vehicle $vehicle): bool
+    {
+        if (!isset($this->vehicles[$vehicle->getId()->__toString()])) {
+            throw new \Exception("Vehicle does not belong to this fleet");
+        }
+
+        return true;
+    }
+
     public function getId(): FleetId
     {
         return $this->id;
