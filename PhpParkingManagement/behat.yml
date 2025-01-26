@@ -4,4 +4,23 @@ default:
             paths:
                 features: tests/Features/
             contexts:
-                - Tests\Features\bootstrap\FeatureContext
+                - Tests\Features\bootstrap\FeatureContext:
+                    useDatabase: false
+
+in_memory:
+    suites:
+        default:
+            paths:
+                features: tests/Features/
+            contexts:
+                - Tests\Features\bootstrap\FeatureContext:
+                    useDatabase: false
+
+database:
+    suites:
+        default:
+            paths:
+                features: tests/Features/
+            contexts:
+                - Tests\Features\bootstrap\FeatureContext:
+                    useDatabase: true

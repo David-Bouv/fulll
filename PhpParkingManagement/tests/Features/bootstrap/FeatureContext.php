@@ -15,9 +15,8 @@ use Domain\Repository\FleetRepositoryInterface;
 use Domain\Repository\UserRepositoryInterface;
 use Domain\Repository\VehicleRepositoryInterface;
 use Domain\ValueObject\Location;
-use Infra\Repository\InMemoryUserRepository;
-use Infra\Repository\InMemoryFleetRepository;
-use Infra\Repository\InMemoryVehicleRepository;
+use Infra\Database\DatabaseConnection;
+use Infra\Repository\FactoryRepository;
 
 /**
  * Defines application features from the specific context.
@@ -27,6 +26,7 @@ class FeatureContext implements Context
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Shared //////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private DatabaseConnection $dbConnection;
     private FleetRepositoryInterface $fleetRepository;
     private VehicleRepositoryInterface $vehicleRepository;
     private UserRepositoryInterface $userRepository;
@@ -34,11 +34,34 @@ class FeatureContext implements Context
     private Vehicle $vehicle;
     private string $vehicleId = '';
 
-    public function __construct()
+    public function __construct(bool $useDatabase)
     {
-        $this->fleetRepository = new InMemoryFleetRepository();
-        $this->vehicleRepository = new InMemoryVehicleRepository();
-        $this->userRepository = new InMemoryUserRepository();
+        $config = include(__DIR__ . '/../../../config.php');
+        $config['use_database'] = $useDatabase;
+        $this->dbConnection = new DatabaseConnection($config);
+        $this->fleetRepository = FactoryRepository::create($this->dbConnection, 'fleet');
+        $this->vehicleRepository = FactoryRepository::create($this->dbConnection, 'vehicle');
+        $this->userRepository = FactoryRepository::create($this->dbConnection, 'user');
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function startTransaction()
+    {
+        if($this->dbConnection->getUseDatabase()){
+            $this->dbConnection->getConnection()->beginTransaction();
+        }
+    }
+
+    /**
+     * @AfterScenario
+     */
+    public function rollbackTransaction()
+    {
+        if($this->dbConnection->getUseDatabase()){
+            $this->dbConnection->getConnection()->rollBack();
+        }
     }
 
     /**
