@@ -18,6 +18,17 @@ class InMemoryFleetRepository implements FleetRepositoryInterface
         return $this->fleets[$fleetId];
     }
 
+    public function findByVehicleId(string $vehicleId): Fleet
+    {
+        foreach ($this->fleets as $fleet) {
+            if (null !== $fleet->getVehicle($vehicleId)) {
+                return $fleet;
+            }
+        }
+
+        throw new \Exception("Fleet with vehicle not found.");
+    }
+
     public function save(Fleet $fleet): void
     {
         $this->fleets[$fleet->getId()->__toString()] = $fleet;
